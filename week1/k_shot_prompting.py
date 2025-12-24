@@ -7,7 +7,8 @@ load_dotenv()
 NUM_RUNS_TIMES = 5
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+"""
 
 USER_PROMPT = """
 Reverse the order of letters in the following word. Only output the reversed word, no other text:
@@ -15,8 +16,73 @@ Reverse the order of letters in the following word. Only output the reversed wor
 httpstatus
 """
 
+########################################################
+# # 1st Attempt, put k-shot example in system prompt
+# YOUR_SYSTEM_PROMPT = """
+# You are a word reversal assistant. Given a word, you reverse the order of all letters.
+
+# Examples:
+# - Input: "hello", Output: "olleh"
+# - Input: "python", Output: "nohtyp"
+# - Input: "example", Output: "elpmaxe"
+# - Input: "reverse", Output: "esrever"
+
+# When given a word to reverse, output only the reversed word with no additional text or explanation.
+# """
+
+# USER_PROMPT = """
+# Reverse the order of letters in the following word. Only output the reversed word, no other text:
+
+# httpstatus
+# """
+
+########################################################
+# # 2nd Attempt, put k-shot example in user prompt
+# YOUR_SYSTEM_PROMPT = ""
+
+# USER_PROMPT = """
+# Reverse the order of letters in the following word. Only output the reversed word, no other text:
+
+# httpstatus
+
+# Examples:
+# - Input: "hello", Output: "olleh"
+# - Input: "python", Output: "nohtyp"
+# - Input: "example", Output: "elpmaxe"
+# - Input: "reverse", Output: "esrever"
+# """
+
+########################################################
+# # 3rd Attempt, put k-shot example in both system and user prompt
+# YOUR_SYSTEM_PROMPT = """
+# You are a word reversal assistant. Given a word, you reverse the order of all letters.
+
+# Examples:
+# - Input: "hello", Output: "olleh"
+# - Input: "python", Output: "nohtyp"
+# - Input: "example", Output: "elpmaxe"
+# - Input: "reverse", Output: "esrever"
+# """
+
+# USER_PROMPT = """
+# Reverse the order of letters in the following word. Only output the reversed word, no other text:
+
+# httpstatus
+
+# Examples:
+# - Input: "hello", Output: "olleh"
+# - Input: "python", Output: "nohtyp"
+# - Input: "example", Output: "elpmaxe"
+# - Input: "reverse", Output: "esrever"
+# """
 
 EXPECTED_OUTPUT = "sutatsptth"
+
+# OLLAMA_MODEL = "mistral-nemo:12b"
+# TEMPERATURE = 0.5
+
+OLLAMA_MODEL = "qwen3:8b"
+TEMPERATURE = 1.0
 
 def test_your_prompt(system_prompt: str) -> bool:
     """Run the prompt up to NUM_RUNS_TIMES and return True if any output matches EXPECTED_OUTPUT.
@@ -26,12 +92,12 @@ def test_your_prompt(system_prompt: str) -> bool:
     for idx in range(NUM_RUNS_TIMES):
         print(f"Running test {idx + 1} of {NUM_RUNS_TIMES}")
         response = chat(
-            model="mistral-nemo:12b",
+            model=OLLAMA_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": USER_PROMPT},
             ],
-            options={"temperature": 0.5},
+            options={"temperature": TEMPERATURE},
         )
         output_text = response.message.content.strip()
         if output_text.strip() == EXPECTED_OUTPUT.strip():
