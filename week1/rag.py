@@ -8,6 +8,24 @@ load_dotenv()
 
 NUM_RUNS_TIMES = 5
 
+# RAG flow: (in mermaid markdown)
+# flowchart TD
+#     A[Load Corpus] --> B[Context Provider:<br/>Retrieve relevant documents]
+#     B --> C[Build Prompt:<br/>Context + Question]
+#     C --> D[LLM Generation:<br/>Generate code]
+#     D --> E[Extract Code]
+#     E --> F{Validate}
+#     F -->|Success| G[✓ SUCCESS]
+#     F -->|Fail| H[Retry<br/>Up to 5 times]
+#     H --> D
+#     style A fill:#e1f5ff
+#     style B fill:#fff4e1
+#     style C fill:#e8f5e9
+#     style D fill:#f3e5f5
+#     style E fill:#fce4ec
+#     style F fill:#fff9c4
+#     style G fill:#c8e6c9
+
 DATA_FILES: List[str] = [
     os.path.join(os.path.dirname(__file__), "data", "api_docs.txt"),
 ]
@@ -37,7 +55,18 @@ QUESTION = (
 
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You are a Python code generation assistant. Your task is to generate Python functions based on the provided API documentation context.
+
+When given context documents:
+1. Carefully read and extract the relevant API information (Base URL, endpoints, authentication methods, request/response formats)
+2. Use ONLY the information provided in the context - do not make assumptions about APIs not documented
+3. Generate clean, correct Python code that follows the documented API specifications exactly
+4. Include proper error handling (raise exceptions for non-200 responses)
+5. Return only the requested data (e.g., just the user's name, not the entire response object)
+
+Your output should be a single Python code block with the function and all necessary imports.
+"""
 
 
 # For this simple example
@@ -56,6 +85,9 @@ def YOUR_CONTEXT_PROVIDER(corpus: List[str]) -> List[str]:
 
     For example, return [] to simulate missing context, or [corpus[0]] to include the API docs.
     """
+    # Return the API documentation from the corpus
+    if corpus:
+        return [corpus[0]]  # Return the first document (API docs)
     return []
 
 
