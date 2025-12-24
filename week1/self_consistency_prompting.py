@@ -8,8 +8,44 @@ load_dotenv()
 
 NUM_RUNS_TIMES = 5
 
+# Self-consistency prompting flow: (in mermaid markdown)
+# flowchart TD
+#     A[User Prompt] --> B[Run 1]
+#     A --> C[Run 2]
+#     A --> D[Run 3]
+#     A --> E[Run 4]
+#     A --> F[Run 5]
+#     B --> G[Answer 1]
+#     C --> H[Answer 2]
+#     D --> I[Answer 3]
+#     E --> J[Answer 4]
+#     F --> K[Answer 5]
+#     G --> L[Collect all answers]
+#     H --> L
+#     I --> L
+#     J --> L
+#     K --> L
+#     L --> M[Majority Vote]
+#     M --> N[Final Answer]
+#     style A fill:#e1f5ff
+#     style N fill:#c8e6c9
+#     style M fill:#fff9c4
+
 # TODO: Fill this in! Try to get as close to 100% correctness across all runs as possible.
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You are a precise mathematical problem solver. When solving distance problems, follow these steps carefully:
+
+1. Identify all given information (total distance, stop locations)
+2. Calculate the position of each stop point
+3. Determine the distance between stops by subtracting the earlier position from the later position
+4. Verify your calculation makes sense
+
+For problems involving stops:
+- If a stop is "after X miles", the stop is at position X
+- If a stop is "Y miles before the end", calculate: total distance - Y
+
+Always show your reasoning step by step, then provide the final answer in the exact format: "Answer: <number>"
+"""
 
 USER_PROMPT = """
 Solve this problem, then give the final answer on the last line as "Answer: <number>".
