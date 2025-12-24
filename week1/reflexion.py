@@ -8,6 +8,17 @@ load_dotenv()
 
 NUM_RUNS_TIMES = 1
 
+# Reflexion flow: (in mermaid markdown)
+# flowchart TD
+#     A[Generate Code] --> B[Test]
+#     B -->|Pass| C[SUCCESS]
+#     B -->|Fail| D[Reflect on Failures]
+#     D --> E[Generate Improved Code]
+#     E --> B
+#     style A fill:#e1f5ff
+#     style C fill:#c8e6c9
+#     style D fill:#fff9c4
+
 SYSTEM_PROMPT = """
 You are a coding assistant. Output ONLY a single fenced Python code block that defines
 the function is_valid_password(password: str) -> bool. No prose or comments.
@@ -15,8 +26,22 @@ Keep the implementation minimal.
 """
 
 # TODO: Fill this in!
-YOUR_REFLEXION_PROMPT = ""
+YOUR_REFLEXION_PROMPT = """
+You are a code improvement assistant. Your task is to analyze a previous implementation that failed test cases and produce an improved version.
 
+You will receive:
+1. The previous code implementation
+2. A list of test failures with diagnostic information
+
+Your job is to:
+- Carefully analyze each failure message to understand what checks are missing or incorrect
+- Identify the root cause of each failure
+- Generate a corrected implementation that addresses all the issues
+- Ensure the function meets all requirements: length >= 8, has lowercase, has uppercase, has digit, has special character
+
+Output ONLY a single fenced Python code block that defines the function is_valid_password(password: str) -> bool. No prose or comments.
+Keep the implementation minimal and correct.
+"""
 
 # Ground-truth test suite used to evaluate generated code
 SPECIALS = set("!@#$%^&*()-_")
@@ -96,7 +121,16 @@ def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
 
     Return a string that will be sent as the user content alongside the reflexion system prompt.
     """
-    return ""
+    context = "The previous implementation failed the following test cases:\n\n"
+    for i, failure in enumerate(failures, 1):
+        context += f"{i}. {failure}\n"
+    
+    context += "\nPrevious implementation:\n\n"
+    context += prev_code
+    context += "\n```\n\n"
+    context += "Please analyze the failures and provide a corrected implementation that passes all test cases."
+    
+    return context
 
 
 def apply_reflexion(
@@ -125,7 +159,7 @@ def run_reflexion_flow(
 ) -> bool:
     # 1) Generate initial function
     initial_code = generate_initial_function(system_prompt)
-    print("Initial code:\n" + initial_code)
+    print("### Initial code:\n" + initial_code)
     func = load_function_from_code(initial_code)
     passed, failures = evaluate_function(func)
     if passed:
@@ -135,6 +169,7 @@ def run_reflexion_flow(
         print(f"FAILURE (initial implementation failed some tests): {failures}")
 
     # 2) Single reflexion iteration
+    print("\n### Reflexion prompt:\n" + reflexion_prompt)
     improved_code = apply_reflexion(reflexion_prompt, build_context, initial_code, failures)
     print("\nImproved code:\n" + improved_code)
     improved_func = load_function_from_code(improved_code)
