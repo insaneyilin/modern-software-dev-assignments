@@ -8,13 +8,28 @@ load_dotenv()
 NUM_RUNS_TIMES = 5
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You are a math expert specializing in modular arithmetic. When solving problems, you must show your reasoning step by step.
 
+For modular exponentiation problems, you should:
+1. Identify the problem type and relevant mathematical properties
+2. Break down the calculation into manageable steps
+3. Show each intermediate calculation clearly
+4. Apply appropriate theorems (like Euler's theorem) or find patterns/cycles
+5. Verify your work when possible
+
+Always end your response with a final line in the format: "Answer: <number>"
+"""
 
 USER_PROMPT = """
-Solve this problem, then give the final answer on the last line as "Answer: <number>".
+Solve this problem step by step, showing all your reasoning. Give the final answer on the last line as "Answer: <number>".
 
-what is 3^{12345} (mod 100)?
+What is 3^{12345} (mod 100)?
+
+Think through this carefully:
+- Consider using Euler's theorem or finding the cycle of powers
+- Show each step of your calculation
+- Verify your result if possible
 """
 
 
@@ -56,6 +71,7 @@ def test_your_prompt(system_prompt: str) -> bool:
             options={"temperature": 0.3},
         )
         output_text = response.message.content
+        print(f"Output text: {output_text}")
         final_answer = extract_final_answer(output_text)
         if final_answer.strip() == EXPECTED_OUTPUT.strip():
             print("SUCCESS")
