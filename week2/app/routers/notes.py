@@ -1,34 +1,34 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from fastapi import APIRouter, status
+from fastapi.responses import Response
 
-from fastapi import APIRouter, HTTPException
-
-from .. import db
-
+from ..db import NotFoundError, get_note, insert_note, list_notes
+from ..schemas import NoteCreate, NoteResponse
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 
-@router.post("")
-def create_note(payload: Dict[str, Any]) -> Dict[str, Any]:
-    content = str(payload.get("content", "")).strip()
-    if not content:
-        raise HTTPException(status_code=400, detail="content is required")
-    note_id = db.insert_note(content)
-    note = db.get_note(note_id)
-    return {
-        "id": note["id"],
-        "content": note["content"],
-        "created_at": note["created_at"],
-    }
+@router.post("", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
+def create_note(note: NoteCreate) -> NoteResponse:
+    """Create a new note"""
+    note_id = insert_note(note.content)
+    created_note = get_note(note_id)
+    if created_note is None:
+        raise NotFoundError(f"Note with id {note_id} not found after creation")
+    return created_note
 
 
-@router.get("/{note_id}")
-def get_single_note(note_id: int) -> Dict[str, Any]:
-    row = db.get_note(note_id)
-    if row is None:
-        raise HTTPException(status_code=404, detail="note not found")
-    return {"id": row["id"], "content": row["content"], "created_at": row["created_at"]}
+@router.get("", response_model=list[NoteResponse])
+def list_all_notes() -> list[NoteResponse]:
+    """List all notes"""
+    return list_notes()
 
 
+@router.get("/{note_id}", response_model=NoteResponse)
+def get_single_note(note_id: int) -> NoteResponse:
+    """Get a single note by ID"""
+    note = get_note(note_id)
+    if note is None:
+        raise NotFoundError(f"Note with id {note_id} not found")
+    return note

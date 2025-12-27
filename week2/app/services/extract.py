@@ -7,6 +7,7 @@ import json
 from typing import Any
 from ollama import chat
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -87,3 +88,52 @@ def _looks_imperative(sentence: str) -> bool:
         "investigate",
     }
     return first.lower() in imperative_starters
+
+class ActionItemsResponse(BaseModel):
+    action_items: list[str]
+
+
+def extract_action_items_llm(text: str) -> List[str]:
+    """
+    Extract action items from text using LLM via Ollama.
+    
+    Args:
+        text: Input text to extract action items from
+        
+    Returns:
+        List of extracted action items as strings
+    """
+    if not text.strip():
+        return []
+    
+    prompt = f"""
+Extract all action items, tasks, todos, and actionable items from the following text.
+Return them as a JSON array of strings. Each action item should be a clear, concise task statement.
+
+Text:
+{text}
+
+Return as JSON with a list of action items.
+"""
+    
+    try:
+        response = chat(
+            messages=[
+                {
+                    'role': 'user',
+                    'content': prompt,
+                }
+            ],
+            model='qwen3:8b',
+            format=ActionItemsResponse.model_json_schema(),
+            options={
+                'temperature': 0,
+            }
+        )
+        
+        result = ActionItemsResponse.model_validate_json(response.message.content)
+        return result.action_items
+    except Exception as e:
+        # Fallback to rule-based extraction if LLM fails
+        # You might want to log the error here
+        return extract_action_items(text)
