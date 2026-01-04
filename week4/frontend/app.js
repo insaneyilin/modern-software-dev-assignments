@@ -4,10 +4,11 @@ async function fetchJSON(url, options) {
   return res.json();
 }
 
-async function loadNotes() {
+async function loadNotes(searchQuery = '') {
   const list = document.getElementById('notes');
   list.innerHTML = '';
-  const notes = await fetchJSON('/notes/');
+  const url = searchQuery ? `/notes/search/?q=${encodeURIComponent(searchQuery)}` : '/notes/';
+  const notes = await fetchJSON(url);
   for (const n of notes) {
     const li = document.createElement('li');
     li.textContent = `${n.title}: ${n.content}`;
@@ -61,6 +62,24 @@ window.addEventListener('DOMContentLoaded', () => {
     loadActions();
   });
 
-  loadNotes();
+  document.getElementById('search-button').addEventListener('click', () => {
+    const searchQuery = document.getElementById('note-search').value;
+    loadNotes(searchQuery);
+  });
+
+  document.getElementById('clear-search-button').addEventListener('click', () => {
+    document.getElementById('note-search').value = '';
+    loadNotes();
+  });
+
+  document.getElementById('note-search').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const searchQuery = document.getElementById('note-search').value;
+      loadNotes(searchQuery);
+    }
+  });
+
+  // Commented out to test the search functionality.
+  // loadNotes();
   loadActions();
 });

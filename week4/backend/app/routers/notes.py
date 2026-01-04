@@ -31,8 +31,14 @@ def search_notes(q: Optional[str] = None, db: Session = Depends(get_db)) -> list
     if not q:
         rows = db.execute(select(Note)).scalars().all()
     else:
+        # Use ilike for explicit case-insensitive search (portable across databases)
+        search_pattern = f"%{q}%"
         rows = (
-            db.execute(select(Note).where((Note.title.contains(q)) | (Note.content.contains(q))))
+            db.execute(
+                select(Note).where(
+                    (Note.title.ilike(search_pattern)) | (Note.content.ilike(search_pattern))
+                )
+            )
             .scalars()
             .all()
         )
