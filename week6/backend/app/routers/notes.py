@@ -69,15 +69,16 @@ def get_note(note_id: int, db: Session = Depends(get_db)) -> NoteRead:
 @router.get("/unsafe-search", response_model=list[NoteRead])
 def unsafe_search(q: str, db: Session = Depends(get_db)) -> list[NoteRead]:
     sql = text(
-        f"""
+        """
         SELECT id, title, content, created_at, updated_at
         FROM notes
-        WHERE title LIKE '%{q}%' OR content LIKE '%{q}%'
+        WHERE title LIKE :pattern OR content LIKE :pattern
         ORDER BY created_at DESC
         LIMIT 50
         """
     )
-    rows = db.execute(sql).all()
+    pattern = f"%{q}%"
+    rows = db.execute(sql, {"pattern": pattern}).all()
     results: list[NoteRead] = []
     for r in rows:
         results.append(
@@ -101,8 +102,15 @@ def debug_hash_md5(q: str) -> dict[str, str]:
 
 @router.get("/debug/eval")
 def debug_eval(expr: str) -> dict[str, str]:
-    result = str(eval(expr))  # noqa: S307
-    return {"result": result}
+    # result = str(eval(expr))  # noqa: S307
+    # return {"result": result}
+    # Removed eval() to prevent code injection vulnerability
+    # This endpoint is disabled for security reasons
+    raise HTTPException(
+        status_code=501,
+        detail="This endpoint has been disabled due to security concerns. Use safe alternatives for expression evaluation."
+    )
+    return {"result": ""}
 
 
 @router.get("/debug/run")
