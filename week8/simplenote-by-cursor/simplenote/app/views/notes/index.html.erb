@@ -1,0 +1,7 @@
+<!-- app/views/notes/index.html.erb -->
+<div class="flex h-screen w-full overflow-hidden">
+  <%= render "sidebar", notes: @notes, note: @note, query: @query %>
+  <main class="flex-1 min-w-0 overflow-hidden">
+    <%= render "editor", note: @note %>
+  </main>
+</div>

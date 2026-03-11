@@ -1,0 +1,17 @@
+<!-- app/views/notes/_note_list.html.erb -->
+<%= turbo_frame_tag "note_list" do %>
+  <% if notes.empty? %>
+    <div class="flex-1 flex items-center justify-center p-8 text-center">
+      <div class="text-gray-400">
+        <p class="text-lg mb-2">还没有笔记</p>
+        <p class="text-sm">点击上方按钮创建第一条笔记</p>
+      </div>
+    </div>
+  <% else %>
+    <div class="flex-1 overflow-y-auto">
+      <% notes.each do |n| %>
+        <%= render "note", note: n, is_selected: n == selected_note %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

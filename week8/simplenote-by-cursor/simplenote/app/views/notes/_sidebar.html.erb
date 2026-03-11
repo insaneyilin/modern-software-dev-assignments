@@ -1,0 +1,11 @@
+<!-- app/views/notes/_sidebar.html.erb -->
+<aside class="w-80 border-r border-gray-200 flex flex-col bg-gray-50">
+  <div class="p-4 border-b border-gray-200">
+    <h1 class="text-xl font-bold mb-4">Simplenote</h1>
+    <%= render "search", query: query %>
+  </div>
+
+  <%= render "new_note_button" %>
+
+  <%= render "note_list", notes: notes, selected_note: note %>
+</aside>
